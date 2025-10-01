@@ -7,7 +7,7 @@ INSTANCE_ID="i-0bb8d7ab09cc91be2"
 ipv4_address=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
 
 # Path to the .env file
-file_to_find=".env.example"
+file_to_find="../.env"
 
 # Check the current FRONTEND_URL in the .env file
 current_url=$(sed -n "7p" $file_to_find)
