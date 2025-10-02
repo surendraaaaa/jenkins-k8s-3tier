@@ -19,7 +19,7 @@ pipeline {
         stage('Git: Code Checkout') {
             steps {
                 script{
-                    code_checkout("https://github.com/surendraaaaa/jenkins-k8s-3tier.git","main")
+                    gitcheckout("https://github.com/surendraaaaa/jenkins-k8s-3tier.git","main")
                 }
             }
         }
@@ -38,15 +38,11 @@ pipeline {
             steps{
                 script{
                     dir('k8s'){
-                        sh """
-                            sed -i -E "s|(image:\s*.*backend:).*|\1${params.BACKEND_DOCKER_TAG}|" all-in-one.yml
-                        """
+                        sh 'sed -i -E "s|(image:\\s*.*jenkins-k8s-3tier-backend:).*|\\1' + params.BACKEND_DOCKER_TAG + '|g" all-in-one.yml'
                     }
                     
-                    dir('kubernetes'){
-                        sh """
-                            sed -i -E "s|(image:\s*.*frontend:).*|\1${params.FRONTEND_DOCKER_TAG}|" all-in-one.yml
-                        """
+                    dir('k8s'){
+                        sh 'sed -i -E "s|(image:\\s*.*jenkins-k8s-3tier-frontend:).*|\\1' + params.FRONTEND_DOCKER_TAG + '|g" all-in-one.yml'
                     }
                     
                 }
@@ -57,7 +53,7 @@ pipeline {
             steps{
                 script{
                     withCredentials([gitUsernamePassword(credentialsId: 'Github-cred', gitToolName: 'Default')]) {
-                        sh '''
+                        sh """
                         echo "Checking repository status: "
                         git status
                     
@@ -69,7 +65,7 @@ pipeline {
                         
                         echo "Pushing changes to github: "
                         git push https://github.com/surendraaaaa/jenkins-k8s-3tier.git main
-                    '''
+                    """
                     }
                 }
             }
@@ -78,26 +74,51 @@ pipeline {
   post {
         success {
             script {
-                emailext attachLog: true,
-                from: 'ashukumavat2410@gmail.com',
-                subject: "Your Application has been updated and deployed - '${currentBuild.result}'",
-                body: """
-                    <html>
-                    <body>
-                        <div style="background-color: #FFA07A; padding: 10px; margin-bottom: 10px;">
-                            <p style="color: black; font-weight: bold;">Project: ${env.JOB_NAME}</p>
-                        </div>
-                        <div style="background-color: #90EE90; padding: 10px; margin-bottom: 10px;">
-                            <p style="color: black; font-weight: bold;">Build Number: ${env.BUILD_NUMBER}</p>
-                        </div>
-                        <div style="background-color: #87CEEB; padding: 10px; margin-bottom: 10px;">
-                            <p style="color: black; font-weight: bold;">URL: ${env.BUILD_URL}</p>
-                        </div>
-                    </body>
-                    </html>
-            """,
-            to: 'ashukumavat2410@gmail.com',
-            mimeType: 'text/html'
+               mailext attachLog: true,
+        from: 'ashukumavat2410@gmail.com',
+        subject: "🚀 Deployment Update: ${currentBuild.result} - ${env.JOB_NAME}",
+        body: """
+            <html>
+            <body style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                <div style="max-width: 600px; margin: auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); overflow: hidden;">
+                    
+                    <div style="background-color: #4CAF50; color: white; padding: 20px; text-align: center;">
+                        <h2 style="margin: 0;">Deployment Notification</h2>
+                        <p style="margin: 5px 0 0 0; font-size: 16px;">Project: <strong>${env.JOB_NAME}</strong></p>
+                    </div>
+
+                    <div style="padding: 20px;">
+                        <p style="font-size: 14px; color: #333;">
+                            Hello,<br><br>
+                            Your application has been <strong>${currentBuild.result}</strong> and deployed successfully.
+                        </p>
+
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                            <tr>
+                                <td style="background-color: #f9f9f9; padding: 10px; font-weight: bold; width: 30%;">Build Number</td>
+                                <td style="background-color: #f9f9f9; padding: 10px;">${env.BUILD_NUMBER}</td>
+                            </tr>
+                            <tr>
+                                <td style="background-color: #f1f1f1; padding: 10px; font-weight: bold;">Build URL</td>
+                                <td style="background-color: #f1f1f1; padding: 10px;"><a href="${env.BUILD_URL}" style="color: #4CAF50;">Click here to view</a></td>
+                            </tr>
+                            <tr>
+                                <td style="background-color: #f9f9f9; padding: 10px; font-weight: bold;">Triggered By</td>
+                                <td style="background-color: #f9f9f9; padding: 10px;">${env.BUILD_USER_ID ?: 'Automated'}</td>
+                            </tr>
+                        </table>
+
+                        <p style="margin-top: 20px; font-size: 12px; color: #777;">
+                            This is an automated message from Jenkins CI/CD pipeline.
+                        </p>
+                    </div>
+                </div>
+            </body>
+            </html>
+        """,
+        to: 'ashukumavat2410@gmail.com',
+        mimeType: 'text/html'
+
             }
         }
       failure {
