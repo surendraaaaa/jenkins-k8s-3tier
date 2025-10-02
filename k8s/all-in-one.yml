@@ -162,7 +162,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: surendraprajpati/backend:latest
+          image: surendraprajpati/backend:v2
           ports:
             - containerPort: 5000
           env:
@@ -203,7 +203,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: surendraprajpati/frontend:latest
+          image: surendraprajpati/frontend:v2
           ports:
             - containerPort: 80
 ---
