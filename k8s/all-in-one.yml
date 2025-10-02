@@ -162,7 +162,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: surendraprajapati/jenkins-k8s-3tier-backend:v2.1
+          image: surendraprajapati/jenkins-k8s-3tier-backend:v2
           ports:
             - containerPort: 5000
           env:
@@ -203,7 +203,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: surendraprajapati/jenkins-k8s-3tier-frontend:v2.1
+          image: surendraprajapati/jenkins-k8s-3tier-frontend:v2
           ports:
             - containerPort: 80
 ---
