@@ -1,25 +1,30 @@
 #!/bin/bash
 
-# Instance ID of your EC2
+# Set the Instance ID
 INSTANCE_ID="i-0bb8d7ab09cc91be2"
 
-# Get the public IP of the EC2 instance
-ipv4_address=$(aws ec2 describe-instances \
-    --instance-ids $INSTANCE_ID \
-    --query 'Reservations[0].Instances[0].PublicIpAddress' \
-    --output text)
+# Retrieve the public IP address of the specified EC2 instance
+ipv4_address=$(aws ec2 describe-instances --instance-ids $INSTANCE_ID --query 'Reservations[0].Instances[0].PublicIpAddress' --output text)
 
-# Path to .env file (always from repo root)
-file_to_find="./.env"
+# Path to the .env file
+file_to_find="client/.env"
 
-# If .env exists, update it
-if [ -f "$file_to_find" ]; then
-    echo "Updating $file_to_find with new IP $ipv4_address"
-    sed -i -e "s|VITE_API_URL.*|VITE_API_URL=\"http://${ipv4_address}:5000\"|g" "$file_to_find"
-else
+# Check if the .env file exists
+if [ ! -f "$file_to_find" ]; then
     echo "ERROR: $file_to_find not found!"
     exit 1
 fi
+
+# Correct the VITE_API_URL
+current_url=$(grep "VITE_API_URL=" "$file_to_find")
+
+if [[ "$current_url" != "VITE_API_URL=\"http://${ipv4_address}:5000\"" ]]; then
+    sed -i -e "s|VITE_API_URL.*|VITE_API_URL=\"http://${ipv4_address}:5000\"|g" "$file_to_find"
+    echo ".env updated with new IP: $ipv4_address"
+else
+    echo ".env already has the correct IP: $ipv4_address"
+fi
+
 
 
 
