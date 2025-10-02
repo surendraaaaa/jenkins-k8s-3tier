@@ -72,36 +72,35 @@ pipeline {
 
         stage('Updating Environment Variables') {
             steps {
-                script {
-                    dir("automations") {
-                        sh "bash updateenv.sh"
-                    }
+                withAWS(credentials: 'aws-creds', region: 'us-east-2') {
+                sh 'bash automation/updateenv.sh'
                 }
             }
         }
+
 
         stage('Docker build') {
             steps {
                 script {
                     dir("client") {
-                        docker_build("Jenkins-k8s-3tier-frontend", "${params.FRONTEND_DOCKER_TAG}", "surendraprajapati")
-                    }
+                        docker_build("jenkins-k8s-3tier-frontend", "${params.FRONTEND_DOCKER_TAG}", "surendraprajapati")
+                        }
                     dir("server") {
-                        docker_build("Jenkins-k8s-3tier-backend", "${params.BACKEND_DOCKER_TAG}", "surendraprajapati")
+                        docker_build("jenkins-k8s-3tier-backend", "${params.BACKEND_DOCKER_TAG}", "surendraprajapati")
+                        }
                     }
                 }
-            }
         }
 
         stage('Docker push') {
             steps {
                 script {
-                    docker_push("Jenkins-k8s-3tier-frontend", "${params.FRONTEND_DOCKER_TAG}", "surendraprajapati")
-                    docker_push("Jenkins-k8s-3tier-backend", "${params.BACKEND_DOCKER_TAG}", "surendraprajapati")
+                    docker_push("jenkins-k8s-3tier-frontend", "${params.FRONTEND_DOCKER_TAG}", "surendraprajapati")
+                    docker_push("jenkins-k8s-3tier-backend", "${params.BACKEND_DOCKER_TAG}", "surendraprajapati")
+                    }
                 }
-            }
         }
-    }
+}
 
     post {
         success {
